@@ -53,7 +53,7 @@
 #   void   nn_get_weights(const void *n, double *W, double *B)
 #   void   nn_set_weights(void *n, const double *W, const double *B)
 #
-# Limits: L <= 7 (8 slot arrays); any single layer size <= 256 units
+# Limits: L <= 7 (8 slot arrays); any single layer size <= 1024 units
 # (static delta buffers); total parameter count must keep 32-bit index math
 # (practically unbounded for tests).
 
@@ -846,6 +846,6 @@ nn_dbg_act:
     .bss
     .align 16
 .Ldout:
-    .skip 256 * 8                     # output-delta scratch (<=256 units)
+    .skip 1024 * 8                    # output-delta scratch (<=1024 units)
 .Ldelt:
-    .skip 256 * 8                     # hidden-delta scratch (double buffer)
+    .skip 1024 * 8                    # hidden-delta scratch (double buffer)

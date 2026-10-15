@@ -86,7 +86,7 @@ def load_test_set():
 
 
 def argmax(y):
-    m, am = 0, 0
+    m, am = y[0], 0
     for i in range(1, 10):
         if y[i] > m:
             m, am = y[i], i

@@ -129,10 +129,10 @@ net (two hidden layers, ReLU; sigmoid output; MSE; mini-batch SGD, batch
 
 ```
 python mnist_prep.py                :: download MNIST IDX -> data/*.bin (one-off)
-build\train_mnist.exe data\mnist_train_imgs.bin data\mnist_train_labels.bin 60000 ^
-    20 0.05 100 20261014 build\model.bin ^
-    data\mnist_test_imgs.bin data\mnist_test_labels.bin 10000
-                                        :: ~28 s/epoch; saves model_mb05_20e_e<N>.bin checkpoints
+ build\train_mnist.exe data\mnist_train_imgs.bin data\mnist_train_labels.bin 60000 ^
+     40 0.05 100 20261014 build\model.bin ^
+     data\mnist_test_imgs.bin data\mnist_test_labels.bin 10000
+                                         :: ~25 s/epoch; saves <model_out>_e<N>.bin checkpoints
 python test\mnist_micrograd.py      :: cross-validate the DLL vs micrograd + recognition timing
 python gui_mnist.py --model build\model.bin
                                         :: Tkinter browser: test images, asm predictions,
@@ -145,20 +145,32 @@ forward outputs (bit-exactness / max |diff|) and the argmax predictions, and
 times recognition forward passes both ways.
 ### Results (final model, seed 20261014)
 
-Training (60000 samples, 20 epochs, mini-batch 100, lr 0.05): test
-accuracy rises monotonically from 84.0% at epoch 1 to 95.6% at epoch 20
-(25.8-30.1 s/epoch, 572 s total). The trajectory is bit-reproducible:
-the first 5 epochs of a fresh 20-epoch run are identical to an earlier
-5-epoch pilot.
+Training (60000 samples, 40 epochs, mini-batch 100, lr 0.05): test
+accuracy rises monotonically from 84.0% at epoch 1 to 97.1% at epoch 40
+(22.9-26.8 s/epoch, 1053 s total). The trajectory is bit-reproducible:
+the first 20 epochs of a fresh 40-epoch run are identical to an earlier
+20-epoch run (same seed, same order).
+
+Per-digit test accuracy (final model):
+
+| digit | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 |
+|---|---|---|---|---|---|---|---|---|---|---|
+| % | 99.08 | 98.85 | 96.12 | 97.23 | 97.56 | 96.86 | 96.97 | 96.11 | 96.41 | 95.34 |
+
+Zero is the *best-classified* digit (971/980). Its 9 remaining errors
+are ambiguous handwriting (zeros drawn like 8s/3s) or digits that look
+mislabeled (model confidently calls them 5/7); none are underrepresented
+in training (5923 of 60000 samples are zeros).
 
 Cross-validation of the final model (asm DLL vs micrograd, identical
-weights): argmax agreement 20/20 images; 8/20 images bit-exact, all
-remaining outputs within 6.9e-18 of the micrograd `Value` graph
-(1-ulp differences from the CRT `exp`). Recognition forward pass:
-asm 190 us/image vs micrograd 4.94 s/image — 25944x.
+weights): argmax agreement 20/20 images (one image is misclassified by
+both — a genuinely hard sample); 6/20 images bit-exact, all remaining
+outputs within 6.94e-18 of the micrograd `Value` graph (1-ulp
+differences from the CRT `exp`). Recognition forward pass:
+asm 189 us/image vs micrograd 4.89 s/image — 25861x.
 Training speed: micrograd fwd+bwd measures ~5.63 s/sample
 (`python test\mnist_micrograd.py --bench`), i.e. ~94 h per epoch,
-while the assembly net trains the full 20 epochs in 572 s.
+while the assembly net trains the full 40 epochs in 1053 s.
 
 
 ## Layout

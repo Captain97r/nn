@@ -102,7 +102,7 @@ def mg_forward(net, x):
 
 
 def argmax(v):
-    m, am = 0, 0
+    m, am = v[0], 0
     for i in range(1, len(v)):
         if v[i] > m:
             m, am = v[i], i
